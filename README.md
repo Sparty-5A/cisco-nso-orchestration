@@ -468,7 +468,7 @@ def is_configured(current, intent) -> bool:
 - [Architecture Deep Dive](docs/ARCHITECTURE.md) - Complete technical architecture
 - [Quick Start Guide](docs/QUICK_START.md) - 10-minute getting started
 - [Workflow Documentation](docs/WORKFLOW.md) - Detailed user journeys
-- [Portfolio Polish](docs/PORTFOLIO_POLISH.md) - Showcase tips
+- [Portfolio Polish](PORTFOLIO_POLISH.md) - Showcase tips
 
 ---
 
