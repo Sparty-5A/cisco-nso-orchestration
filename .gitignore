@@ -87,3 +87,6 @@ nso-run/
 # Deprecated files
 _deprecated/
 *.deprecated
+
+# .md files
+docs/*.md
