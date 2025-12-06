@@ -1,0 +1,29 @@
+<bgp-no-instance>
+  <id>{{ local_as }}</id>
+  <bgp>
+    <router-id>{{ router_id }}</router-id>
+  </bgp>
+
+  {% for neighbor in neighbors %}
+  <neighbor>
+    <id>{{ neighbor.neighbor_ip }}</id>
+    <remote-as>{{ neighbor.remote_as }}</remote-as>
+
+    {% if neighbor.description %}
+    <description>{{ neighbor.description }}</description>
+    {% endif %}
+
+    {% if neighbor.password %}
+    <password>
+      <encrypted>{{ neighbor.password }}</encrypted>
+    </password>
+    {% endif %}
+
+    {% if neighbor.update_source %}
+    <update-source>
+      <Loopback>{{ neighbor.update_source.replace('Loopback', '').replace('loopback', '') }}</Loopback>
+    </update-source>
+    {% endif %}
+  </neighbor>
+  {% endfor %}
+</bgp-no-instance>

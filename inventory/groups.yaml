@@ -1,0 +1,123 @@
+# Group Definitions - NSO Sandbox Topology
+#
+# Groups based on actual sandbox topology structure
+
+groups:
+  # ===== Network Layers =====
+  core:
+    description: "Core routers (production and development)"
+    vars:
+      layer: core
+      bgp_as: 65000
+      syslog_server: 10.1.1.100
+
+  distribution:
+    description: "Distribution layer routers and switches"
+    vars:
+      layer: distribution
+      bgp_as: 65001
+      syslog_server: 10.1.1.100
+
+  edge:
+    description: "Edge devices (firewall, switches, internet routers)"
+    vars:
+      layer: edge
+      syslog_server: 10.1.1.100
+
+  # ===== Device Types =====
+  router:
+    description: "All routers (IOS-XE, IOS-XR)"
+    vars:
+      device_class: router
+      routing_enabled: true
+
+  switch:
+    description: "All switches (IOS, NX-OS)"
+    vars:
+      device_class: switch
+      switching_enabled: true
+
+  firewall:
+    description: "Firewall devices (ASA)"
+    vars:
+      device_class: firewall
+      security_enabled: true
+
+  end_host:
+    description: "End hosts (Linux)"
+    vars:
+      device_class: host
+      managed_by_nso: true
+
+  # ===== Service Types =====
+  bgp_enabled:
+    description: "Devices with BGP enabled"
+    vars:
+      bgp_enabled: true
+      bgp_timers_keepalive: 30
+      bgp_timers_holdtime: 90
+
+  # ===== Environments =====
+  production:
+    description: "Production environment (green box)"
+    vars:
+      environment: prod
+      backup_enabled: true
+      change_control_required: true
+      color: green
+
+  development:
+    description: "Development environment (blue box)"
+    vars:
+      environment: dev
+      backup_enabled: false
+      change_control_required: false
+      color: blue
+
+  shared:
+    description: "Shared infrastructure (core connectivity, external)"
+    vars:
+      environment: shared
+      backup_enabled: true
+      change_control_required: true
+
+  # ===== Topology Sections =====
+  core_connectivity:
+    description: "Core connectivity devices (yellow box)"
+    vars:
+      topology_section: core_connectivity
+      color: yellow
+      critical: true
+
+  internet:
+    description: "Internet-facing devices (gray box)"
+    vars:
+      topology_section: external
+      color: gray
+      internet_facing: true
+
+  # ===== Protocol Groups =====
+  telnet_access:
+    description: "Devices accessible via Telnet"
+    vars:
+      primary_protocol: telnet
+      secure: false
+
+  ssh_access:
+    description: "Devices accessible via SSH"
+    vars:
+      primary_protocol: ssh
+      secure: true
+
+  # ===== BGP Peering Groups =====
+  ibgp_peers:
+    description: "Internal BGP peers within same AS"
+    vars:
+      bgp_type: ibgp
+      next_hop_self: true
+
+  ebgp_peers:
+    description: "External BGP peers to different AS"
+    vars:
+      bgp_type: ebgp
+      multihop: false

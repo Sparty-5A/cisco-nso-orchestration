@@ -1,0 +1,93 @@
+cisco_8k-xe:
+  hostname: 10.10.20.48
+  platform: cisco_xe         # fine to keep; not used by RESTCONF task
+  data:
+    restconf:
+      base_url: "https://10.10.20.48/restconf"
+      username: "developer"   # or admin, per the sandbox page youâ€™re using
+      password: "C1sco12345"
+      verify_ssl: false       # AO uses a self-signed cert
+
+
+
+import json
+import requests
+from nornir.core.task import Task, Result
+
+HEADERS = {
+    "Accept": "application/yang-data+json",
+    "Content-Type": "application/yang-data+json",
+}
+
+def restconf_get(task: Task, path: str) -> Result:
+    rc = task.host.get("restconf", None) or task.host.data.get("restconf", {})
+    base = rc.get("base_url")
+    user = rc.get("username")
+    pwd  = rc.get("password")
+    verify = rc.get("verify_ssl", True)
+    if not base or not user or not pwd:
+        return Result(host=task.host, failed=True, result="Missing restconf config (base_url/username/password)")
+
+    url = f"{base}/data/{path.strip('/')}"
+    resp = requests.get(url, headers=HEADERS, auth=(user, pwd), verify=verify, timeout=30)
+    if not resp.ok:
+        return Result(host=task.host, failed=True, result=f"GET {url} -> {resp.status_code} {resp.text}")
+
+    # pretty JSON string for console, raw data in result
+    try:
+        payload = resp.json()
+        pretty = json.dumps(payload, indent=2)
+    except Exception:
+        payload, pretty = resp.text, resp.text
+
+    return Result(host=task.host, result=pretty, changed=False)
+
+
+
+import argparse
+from nornir import InitNornir
+from nornir.core.filter import F
+from automation.lib.logging_setup import setup_logging
+from net.nornir.tasks.restconf import restconf_get
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", required=True, help="inventory name or hostname")
+    parser.add_argument("--path", required=True, help="RESTCONF data path, e.g. 'ietf-interfaces:interfaces'")
+    args = parser.parse_args()
+
+    logger, console = setup_logging()
+
+    nr = InitNornir(config_file="net/nornir/config.yaml", logging={"enabled": False})
+
+    flt = nr.filter(F(name=args.host))
+    if not flt.inventory.hosts:
+        flt = nr.filter(F(hostname=args.host))
+    if not flt.inventory.hosts:
+        console.error(f"No hosts matched filter: {args.host}")
+        return 2
+
+    console.info(f"RESTCONF GET on: {list(flt.inventory.hosts.keys())} path={args.path}")
+    res = flt.run(task=restconf_get, path=args.path)
+
+    for h, multi in res.items():
+        for r in multi:
+            status = "FAILED" if r.failed else "OK"
+            console.info(f"[{h}] {status}")
+            if r.result:
+                console.info(r.result)
+    return 0
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+
+# Interfaces (config model)
+python -m net.nornir.run_restconf --host xe-ao --path "ietf-interfaces:interfaces"
+
+# Full native config tree (often large)
+python -m net.nornir.run_restconf --host xe-ao --path "Cisco-IOS-XE-native:native"
+
+# Operational interfaces (on some images)
+python -m net.nornir.run_restconf --host xe-ao --path "ietf-interfaces:interfaces-state"

@@ -1,0 +1,100 @@
+# Device-Level BGP Intent - Production Environment
+#
+# ============================================================================
+# DELETION POLICY (NEW FEATURE!)
+# ============================================================================
+# delete_unmanaged_bgp_neighbors controls what happens to BGP neighbors
+# on the router that are NOT in this intent file:
+#
+#   false (default) = SAFE MODE
+#     - Only manage neighbors listed in intent
+#     - Leave other neighbors alone (manual configs preserved)
+#     - Recommended for shared environments
+#
+#   true = STRICT MODE
+#     - Delete any BGP neighbors NOT in intent
+#     - Enforces "intent is source of truth"
+#     - Use with caution!
+# ============================================================================
+#
+# Each device has its own unique BGP configuration with:
+# - Unique router-id (typically its loopback0)
+# - Unique neighbor configurations (pointing to other routers' loopbacks)
+# - Update-source matching the local loopback
+
+devices:
+  # ========== Production Devices ==========
+
+  # Core Router 01 (IOS-XR)
+  - name: core-rtr01
+    device_type: ios-xr
+    delete_unmanaged_bgp_neighbors: false  # Safe mode - leave unmanaged neighbors alone
+    bgp:
+      asn: 65001
+      router_id: 10.200.200.1  # core-rtr01's loopback0
+      neighbors:
+        - ip: 10.100.100.1
+          remote_asn: 65001
+          description: "iBGP to dist-rtr01"
+          update_source: "Loopback0"
+
+  # Distribution Router 01 (IOS-XE)
+  - name: dist-rtr01
+    device_type: ios-xe
+    delete_unmanaged_bgp_neighbors: false  # Safe mode - leave unmanaged neighbors alone
+    bgp:
+      asn: 65001
+      router_id: 10.100.100.1  # dist-rtr01's loopback0
+      neighbors:
+        - ip: 10.200.200.1
+          remote_asn: 65001
+          description: "iBGP to core-rtr01"
+          update_source: "Loopback0"
+
+  # ========== Development Devices ==========
+
+  # Development Core Router (IOS-XR)
+  - name: dev-core-rtr01
+    device_type: ios-xr
+    delete_unmanaged_bgp_neighbors: false  # Safe mode
+    bgp:
+      asn: 65001
+      router_id: 10.200.200.2  # dev-core-rtr01's loopback0
+      neighbors:
+        - ip: 10.100.100.2
+          remote_asn: 65001
+          description: "iBGP to dev-dist-rtr01"
+          update_source: "Loopback0"
+
+  # Development Distribution Router (IOS-XE)
+  - name: dev-dist-rtr01
+    device_type: ios-xe
+    delete_unmanaged_bgp_neighbors: false  # Safe mode
+    bgp:
+      asn: 65001
+      router_id: 10.100.100.2  # dev-dist-rtr01's loopback0
+      neighbors:
+        - ip: 10.200.200.2
+          remote_asn: 65001
+          description: "iBGP to dev-core-rtr01"
+          update_source: "Loopback0"
+
+
+# ============================================================================
+# STRICT MODE EXAMPLE (Uncomment to use)
+# ============================================================================
+# WARNING: This will DELETE any BGP neighbors not listed below!
+# Only use when you control ALL BGP config via automation.
+#
+#  - name: strict-rtr01
+#    device_type: ios-xe
+#    delete_unmanaged_bgp_neighbors: true  # ⚠️ STRICT MODE - deletes unmanaged!
+#    bgp:
+#      asn: 65001
+#      router_id: 10.1.1.1
+#      neighbors:
+#        - ip: 10.0.0.2
+#          remote_asn: 65002
+#          description: "Only managed neighbor"
+#      # Any BGP neighbors on strict-rtr01 NOT listed above will be DELETED!
+# ============================================================================

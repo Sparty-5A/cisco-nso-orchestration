@@ -1,0 +1,109 @@
+IOS-XE:
+
+<Loopback>
+   <name>500</name>
+   <description>RESTCONF CREATED LOOPBACK</description>
+   <ip>
+     <address>
+       <primary>
+         <address>10.30.50.4</address>
+         <mask>255.255.255.255</mask>
+       </primary>
+     </address>
+   </ip>
+ </Loopback>
+ 
+IOS-XE:
+ 
+ <router xmlns="urn:ios">
+	<bgp>
+	  <as-no>65001</as-no>
+	  <bgp>
+		<router-id>10.100.100.1</router-id>
+	  </bgp>
+	  <neighbor>
+		<id>10.100.100.1</id>
+		<remote-as>65001</remote-as>
+		<password>
+		  <text>t5st_p@sswd</text>
+		</password>
+	  </neighbor>
+	  <address-family>
+		<ipv4>
+		  <af>unicast</af>
+		  <neighbor>
+			<id>10.200.200.1</id>
+			<activate/>
+		  </neighbor>
+		</ipv4>
+	  </address-family>
+	</bgp>
+  </router>
+
+ 
+IOS-XR: 
+
+<router xmlns="http://tail-f.com/ned/cisco-ios-xr">
+  <ospf>
+	<name>1</name>
+	<area>
+	  <id>0</id>
+	  <interface>
+		<name>GigabitEthernet0/0/0/0</name>
+	  </interface>
+	  <interface>
+		<name>GigabitEthernet0/0/0/1</name>
+	  </interface>
+	</area>
+  </ospf>
+  <bgp>
+	<bgp-no-instance>
+	  <id>65001</id>
+	  <bgp>
+		<router-id>10.100.100.1</router-id>
+	  </bgp>
+	  <address-family>
+		<ipv4>
+		  <unicast>
+			<network>
+			  <net>10.20.20.0/24</net>
+			</network>
+		  </unicast>
+		</ipv4>
+	  </address-family>
+	  <neighbor>
+		<id>10.200.200.1</id>
+		<remote-as>65001</remote-as>
+		<description>iBGP to core-rtr01</description>
+		<update-source>
+		  <Loopback>0</Loopback>
+		</update-source>
+	  </neighbor>
+	</bgp-no-instance>
+  </bgp>
+</router>
+
+
+# SSH to NSO
+ssh developer@10.10.20.49
+
+# Enter NSO CLI in config mode
+ncs_cli -C
+
+# Configure BGP manually
+config
+devices device core-rtr01 config
+cisco-ios-xr:router bgp ?
+
+# This will show you the exact structure NSO expects
+# Try creating a minimal BGP config:
+cisco-ios-xr:router bgp 65001
+
+# Then look at what was created:
+top
+show configuration devices device core-rtr01 config cisco-ios-xr:router bgp | display xml
+
+# Commit and exit
+commit
+exit
+exit

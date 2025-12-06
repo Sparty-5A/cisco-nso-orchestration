@@ -1,0 +1,162 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cisco-nso-orchestration"
+version = "1.0.0"
+description = "Production-grade Infrastructure as Code framework for Cisco network orchestration using NSO with multi-platform support (IOS-XE, IOS-XR, NX-OS)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [
+    {name = "Scott Penry", email = "scottpenry@comcast.net"}
+]
+keywords = [
+    "cisco", "nso", "network-automation", "restconf", "iac",
+    "infrastructure-as-code", "orchestration", "ios-xe", "ios-xr", "nxos"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Networking",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "pydantic>=2.12.0",
+    "pyyaml>=6.0.0",
+    "jinja2>=3.1.0",
+    "loguru>=0.7.0",
+    "httpx>=0.27.0",
+    "requests>=2.32.0",
+    "urllib3>=2.0.0",
+    "xmltodict>=1.0.0",
+    "python-decouple>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.0.0",
+    "pytest-mock>=3.12.0",
+    "black>=24.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.8.0",
+    "ipython>=8.20.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Sparty-5A/cisco-nso-orchestration"
+Documentation = "https://github.com/Sparty-5A/cisco-nso-orchestration#readme"
+Repository = "https://github.com/Sparty-5A/cisco-nso-orchestration"
+Issues = "https://github.com/Sparty-5A/cisco-nso-orchestration/issues"
+
+[tool.setuptools]
+packages = ["automation", "services", "scripts"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+pythonpath = "."
+testpaths = ["tests"]
+python_files = ["test_*.py", "pytest_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "-ra",
+    "--strict-markers",
+    "--import-mode=importlib",
+]
+markers = [
+    "slow: marks tests as slow",
+    "network: marks tests that require network access",
+    "integration: marks integration tests",
+    "devnet_sandbox: tests requiring DevNet sandbox",
+    "nso: tests requiring NSO connectivity",
+    "unit: Unit tests (fast, isolated)",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py312", "py313"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  __pycache__
+  | \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.venv
+  | venv
+  | build
+  | dist
+  | logs
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+]
+exclude = [
+    ".venv",
+    "venv",
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "logs",
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+exclude = ["logs", "tests", "__pycache__"]
+
+[tool.coverage.run]
+source = ["automation", "services"]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+    "*/logs/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

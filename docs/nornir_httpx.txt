@@ -1,0 +1,159 @@
+import json
+import httpx
+from typing import Any, Dict
+from nornir.core.task import Task, Result
+
+HEADERS = {
+    "Accept": "application/yang-data+json",
+    "Content-Type": "application/yang-data+json",
+}
+
+_STORE_KEY = "_restconf_httpx"   # where we keep per-host client in host.data
+
+def _get_store(task: Task) -> Dict[str, Any]:
+    # Ensure a dedicated namespace in host.data
+    store = task.host.data.get(_STORE_KEY)
+    if store is None:
+        store = {}
+        task.host.data[_STORE_KEY] = store
+    return store
+
+def _get_client(task: Task) -> httpx.Client:
+    store = _get_store(task)
+    client = store.get("client")
+    if client:
+        return client
+
+    rc: Dict[str, Any] = task.host.data.get("restconf", {})
+    base = rc.get("base_url")
+    user = rc.get("username")
+    pwd  = rc.get("password")
+    verify = rc.get("verify_ssl", True)
+
+    if not base or not user or not pwd:
+        raise ValueError("Missing restconf.base_url/username/password in host data")
+
+    client = httpx.Client(
+        base_url=base.rstrip("/"),
+        auth=(user, pwd),
+        headers=HEADERS,
+        verify=verify
+    )
+    store["client"] = client
+    return client
+
+def _pretty_json(body: Any) -> str:
+    try:
+        return json.dumps(body, indent=2)
+    except Exception:
+        return str(body)
+
+def restconf_get(task: Task, path: str) -> Result:
+    client = _get_client(task)
+    url = f"/data/{path.strip('/')}"
+    try:
+        resp = client.get(url)
+        resp.raise_for_status()
+        content = resp.json() if "json" in resp.headers.get("content-type", "") else resp.text
+        return Result(host=task.host, result=_pretty_json(content), changed=False)
+    except httpx.HTTPStatusError as e:
+        return Result(host=task.host, failed=True,
+                      result=f"GET {url} -> {e.response.status_code} {e.response.text}")
+    except Exception as e:
+        return Result(host=task.host, failed=True, result=f"GET {url} failed: {e}")
+
+def restconf_put(task: Task, path: str, payload: Dict[str, Any]) -> Result:
+    client = _get_client(task)
+    url = f"/data/{path.strip('/')}"
+    try:
+        resp = client.put(url, json=payload)
+        resp.raise_for_status()
+        body = resp.json() if resp.content else {"status": "ok"}
+        return Result(host=task.host, result=_pretty_json(body), changed=True)
+    except httpx.HTTPStatusError as e:
+        return Result(host=task.host, failed=True,
+                      result=f"PUT {url} -> {e.response.status_code} {e.response.text}")
+    except Exception as e:
+        return Result(host=task.host, failed=True, result=f"PUT {url} failed: {e}")
+
+def restconf_patch(task: Task, path: str, payload: Dict[str, Any]) -> Result:
+    client = _get_client(task)
+    url = f"/data/{path.strip('/')}"
+    try:
+        resp = client.patch(url, json=payload)
+        resp.raise_for_status()
+        body = resp.json() if resp.content else {"status": "ok"}
+        return Result(host=task.host, result=_pretty_json(body), changed=True)
+    except httpx.HTTPStatusError as e:
+        return Result(host=task.host, failed=True,
+                      result=f"PATCH {url} -> {e.response.status_code} {e.response.text}")
+    except Exception as e:
+        return Result(host=task.host, failed=True, result=f"PATCH {url} failed: {e}")
+
+def restconf_delete(task: Task, path: str) -> Result:
+    client = _get_client(task)
+    url = f"/data/{path.strip('/')}"
+    try:
+        resp = client.delete(url)
+        resp.raise_for_status()
+        return Result(host=task.host, result="deleted", changed=True)
+    except httpx.HTTPStatusError as e:
+        return Result(host=task.host, failed=True,
+                      result=f"DELETE {url} -> {e.response.status_code} {e.response.text}")
+    except Exception as e:
+        return Result(host=task.host, failed=True, result=f"DELETE {url} failed: {e}")
+
+def restconf_close(task: Task) -> Result:
+    """Idempotent: safe to call even if client never existed or already closed."""
+    store = _get_store(task)
+    client = store.get("client")
+    if client is None:
+        return Result(host=task.host, result="no client", changed=False)
+    try:
+        client.close()
+    finally:
+        # remove the reference from host.data
+        store.pop("client", None)
+    return Result(host=task.host, result="closed", changed=False)
+
+
+
+import argparse
+from nornir import InitNornir
+from nornir.core.filter import F
+from automation.lib.logging_setup import setup_logging
+from net.nornir.tasks.restconf_httpx import restconf_get, restconf_close
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--host", required=True, help="inventory name or hostname")
+    p.add_argument("--path", required=True, help="RESTCONF data path, e.g. 'ietf-interfaces:interfaces'")
+    args = p.parse_args()
+
+    logger, console = setup_logging()
+
+    nr = InitNornir(config_file="net/nornir/config.yaml", logging={"enabled": False})
+
+    flt = nr.filter(F(name=args.host))
+    if not flt.inventory.hosts:
+        flt = nr.filter(F(hostname=args.host))
+    if not flt.inventory.hosts:
+        console.error(f"No hosts matched filter: {args.host}")
+        return 2
+
+    console.info(f"RESTCONF GET on: {list(flt.inventory.hosts.keys())} path={args.path}")
+    res = flt.run(task=restconf_get, path=args.path)
+
+    for h, multi in res.items():
+        for r in multi:
+            status = "FAILED" if r.failed else "OK"
+            console.info(f"[{h}] {status}")
+            if r.result:
+                console.info(r.result)
+
+    # optional: close clients
+    flt.run(task=restconf_close)
+    return 0
+
+if __name__ == "__main__":
+    raise SystemExit(main())

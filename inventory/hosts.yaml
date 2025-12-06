@@ -1,0 +1,232 @@
+# Device Inventory - NSO Sandbox Topology
+# Based on actual Cisco DevNet NSO sandbox environment
+#
+# Topology:
+# - Core Connectivity: edge-firewall01, edge-sw01
+# - Production: core-rtr01, dist-rtr01, dist-sw01
+# - Development: dev-core-rtr01, dev-dist-rtr01, dev-dist-sw01
+# - External: internet-rtr01, internet-host01
+
+devices:
+  # ===== Core Connectivity (Yellow Box) =====
+  edge-firewall01:
+    hostname: edge-firewall01
+    ip_address: 10.10.20.171
+    device_type: asa
+    protocol: telnet
+    groups:
+      - edge
+      - firewall
+      - core_connectivity
+    vars:
+      interfaces:
+        G0/0: "External connection"
+        G0/1: "To edge-sw01"
+      region: core
+      environment: shared
+
+  edge-sw01:
+    hostname: edge-sw01
+    ip_address: 10.10.20.172
+    device_type: ios
+    protocol: telnet
+    groups:
+      - edge
+      - switch
+      - core_connectivity
+    vars:
+      interfaces:
+        G0/1: "To edge-firewall01"
+        G0/2: "To core-rtr01"
+        G0/3: "To dev-core-rtr01"
+      region: core
+      environment: shared
+
+  # ===== Production Environment (Green Box) =====
+  core-rtr01:
+    hostname: core-rtr01
+    ip_address: 10.10.20.173
+    device_type: ios-xr
+    protocol: telnet
+    groups:
+      - core
+      - router
+      - production
+      - bgp_enabled
+    vars:
+      loopback0_ip: 10.200.200.1
+      bgp_router_id: 10.200.200.1
+      bgp_as: 65000
+      interfaces:
+        G0/2: "To edge-sw01"
+        G0/3: "To dist-rtr01"
+        G2: "eBGP peering"
+      region: production
+      environment: prod
+
+  dist-rtr01:
+    hostname: dist-rtr01
+    ip_address: 10.10.20.175
+    device_type: ios-xe
+    protocol: ssh
+    groups:
+      - distribution
+      - router
+      - production
+      - bgp_enabled
+    vars:
+      loopback0_ip: 10.100.100.1
+      bgp_router_id: 10.100.100.1
+      bgp_as: 65001
+      interfaces:
+        G3: "To core-rtr01"
+        E1/1: "To dist-sw01"
+      region: production
+      environment: prod
+
+  dist-sw01:
+    hostname: dist-sw01
+    ip_address: 10.10.20.177
+    device_type: nxos
+    protocol: ssh
+    groups:
+      - distribution
+      - switch
+      - production
+    vars:
+      interfaces:
+        E1/11: "To dist-rtr01"
+        E0: "To inside-host01"
+      region: production
+      environment: prod
+
+  # ===== Development Environment (Blue Box) =====
+  dev-core-rtr01:
+    hostname: dev-core-rtr01
+    ip_address: 10.10.20.174
+    device_type: ios-xr
+    protocol: telnet
+    groups:
+      - core
+      - router
+      - development
+      - bgp_enabled
+    vars:
+      loopback0_ip: 10.200.200.2
+      bgp_router_id: 10.200.200.2
+      bgp_as: 65000
+      interfaces:
+        G0/2: "To edge-sw01"
+        G0/3: "To dev-dist-rtr01"
+        G2: "eBGP peering"
+      region: development
+      environment: dev
+
+  dev-dist-rtr01:
+    hostname: dev-dist-rtr01
+    ip_address: 10.10.20.176
+    device_type: ios-xe
+    protocol: ssh
+    groups:
+      - distribution
+      - router
+      - development
+      - bgp_enabled
+    vars:
+      loopback0_ip: 10.100.100.2
+      bgp_router_id: 10.100.100.2
+      bgp_as: 65001
+      interfaces:
+        G3: "To dev-core-rtr01"
+        E1/1: "To dev-dist-sw01"
+      region: development
+      environment: dev
+
+  dev-dist-sw01:
+    hostname: dev-dist-sw01
+    ip_address: 10.10.20.178
+    device_type: nxos
+    protocol: ssh
+    groups:
+      - distribution
+      - switch
+      - development
+    vars:
+      interfaces:
+        E1/11: "To dev-dist-rtr01"
+        E0: "To inside-host02"
+      region: development
+      environment: dev
+
+  # ===== External/Internet (Gray Box) =====
+  internet-rtr01:
+    hostname: internet-rtr01
+    ip_address: 10.10.20.181
+    device_type: ios-xe
+    protocol: ssh
+    groups:
+      - edge
+      - internet
+      - router
+    vars:
+      interfaces:
+        G2: "To edge-firewall01"
+        G3: "To internet-host01"
+        E0: "External connection"
+      region: external
+      environment: shared
+
+  # ===== End Hosts =====
+  inside-host01:
+    hostname: inside-host01
+    ip_address: 10.10.20.179
+    device_type: linux
+    protocol: ssh
+    groups:
+      - end_host
+      - production
+    vars:
+      interface: E0
+      connected_to: dist-sw01
+      region: production
+      environment: prod
+
+  inside-host02:
+    hostname: inside-host02
+    ip_address: 10.10.20.180
+    device_type: linux
+    protocol: ssh
+    groups:
+      - end_host
+      - development
+    vars:
+      interface: E0
+      connected_to: dev-dist-sw01
+      region: development
+      environment: dev
+
+  internet-host01:
+    hostname: internet-host01
+    ip_address: 10.10.20.182
+    device_type: linux
+    protocol: ssh
+    groups:
+      - end_host
+      - internet
+    vars:
+      interface: E0
+      connected_to: internet-rtr01
+      region: external
+      environment: shared
+
+# ===== Topology Notes =====
+#
+# Production Path: inside-host01 → dist-sw01 → dist-rtr01 → core-rtr01 → edge-sw01 → edge-firewall01 → internet-rtr01
+# Development Path: inside-host02 → dev-dist-sw01 → dev-dist-rtr01 → dev-core-rtr01 → edge-sw01 → edge-firewall01 → internet-rtr01
+#
+# BGP Peering:
+# - core-rtr01 ↔ dist-rtr01 (iBGP within production)
+# - dev-core-rtr01 ↔ dev-dist-rtr01 (iBGP within development)
+# - core-rtr01/dev-core-rtr01 ↔ internet-rtr01 (eBGP)
+#
+# Credentials: cisco / cisco

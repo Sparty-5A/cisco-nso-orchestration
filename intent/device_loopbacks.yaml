@@ -1,0 +1,37 @@
+# Network Intent - Source of Truth
+# Different deletion policies per device
+devices:
+  - name: dev-dist-rtr01
+    device_type: ios-xe
+    delete_unmanaged_loopbacks: false  # Safe: don't touch existing loopbacks
+    loopbacks:
+      - id: 100
+        ipv4: 10.100.100.1
+        netmask: 255.255.255.255
+        description: "Management loopback"
+
+      - id: 200
+        ipv4: 10.200.200.1
+        netmask: 255.255.255.255
+        description: "BGP peering loopback"
+
+      - id: 300
+        ipv4: 10.30.30.1
+        netmask: 255.255.255.255
+        description: "OSPF Router-ID"
+
+  - name: dist-rtr01
+    device_type: ios-xe
+    delete_unmanaged_loopbacks: true  # Strict: clean slate
+    loopbacks:
+      - id: 100
+        ipv4: 10.100.100.2
+        netmask: 255.255.255.255
+        description: "Management loopback"
+
+      - id: 300
+        ipv4: 10.30.30.2
+        netmask: 255.255.255.255
+        description: "OSPF Router-ID"
+
+

@@ -1,0 +1,89 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.mypy_cache/
+.hypothesis/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Network automation specific
+backups/
+*.xml.bak
+*.yaml.bak
+
+# Credentials (IMPORTANT!)
+credentials.yaml
+secrets.yaml
+*.key
+*.pem
+.netrc
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# uv
+uv.lock
+
+# Python version
+.python-version
+
+# NSO specific
+ncs-python-vm/
+ncs-run/
+nso-run/
+
+# Deprecated files
+_deprecated/
+*.deprecated

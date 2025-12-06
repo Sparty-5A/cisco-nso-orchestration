@@ -1,0 +1,92 @@
+# Default Values for All Devices
+#
+# These values are applied to ALL devices unless overridden
+# by group or host-specific variables.
+
+defaults:
+  # ===== NSO Connection =====
+  nso_host: 10.10.20.49
+  nso_port: 8080
+  nso_protocol: http
+
+  # ===== Device Access =====
+  netconf_port: 830
+  ssh_port: 22
+
+  # ===== Management =====
+  domain_name: example.com
+  timezone: America/Chicago
+
+  # ===== Logging =====
+  logging:
+    console_level: informational
+    buffer_size: 32768
+    facility: local7
+
+  # ===== SNMP =====
+  snmp:
+    version: v2c
+    community_ro: public
+    community_rw: private
+    location: "Data Center 1"
+    contact: "netops@example.com"
+
+  # ===== NTP =====
+  ntp_servers:
+    - 10.1.1.10
+    - 10.1.1.11
+
+  # ===== DNS =====
+  dns_servers:
+    - 8.8.8.8
+    - 8.8.4.4
+
+  # ===== AAA =====
+  aaa:
+    tacacs_servers:
+      - 10.1.1.20
+      - 10.1.1.21
+    radius_servers:
+      - 10.1.1.30
+      - 10.1.1.31
+
+  # ===== Syslog =====
+  syslog_servers:
+    - 10.1.1.100
+
+  # ===== BGP Defaults =====
+  bgp:
+    log_neighbor_changes: true
+    graceful_restart: true
+    bestpath_as_path_multipath_relax: true
+
+  # ===== Interface Defaults =====
+  interface:
+    mtu: 1500
+    load_interval: 30
+
+  # ===== QoS Defaults =====
+  qos:
+    trust: dscp
+    default_class: best-effort
+
+  # ===== Security =====
+  security:
+    password_encryption: true
+    tcp_keepalives_in: true
+    tcp_keepalives_out: true
+    service_tcp_keepalives_in: true
+    service_tcp_keepalives_out: true
+
+  # ===== Deployment =====
+  deployment:
+    dry_run_default: true
+    auto_commit: false
+    rollback_on_error: true
+    parallel_max_workers: 5
+
+  # ===== Monitoring =====
+  monitoring:
+    netflow_enabled: false
+    sflow_enabled: false
+    telemetry_enabled: false
