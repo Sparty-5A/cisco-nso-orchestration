@@ -14,10 +14,10 @@ from typing import Any
 
 from loguru import logger
 
-from nso_orchestration.automation.inventory_loader import Inventory
-from nso_orchestration.automation.nso_client import NSOClient
-from nso_orchestration.automation.service_models import ServiceDeploymentIntent
-from nso_orchestration.services.bgp_peering import (
+from automation.inventory_loader import Inventory
+from automation.nso_client import NSOClient
+from automation.service_models import ServiceDeploymentIntent
+from services.bgp_peering import (
     check_bgp_configured,
     deploy_bgp_service,
     remove_bgp_service,
@@ -475,8 +475,8 @@ class ServiceOrchestrator:
 
 # Example usage
 if __name__ == "__main__":
-    from nso_orchestration.automation.inventory_loader import load_inventory
-    from nso_orchestration.automation.service_models import (
+    from automation.inventory_loader import load_inventory
+    from automation.service_models import (
         BGPNeighborIntent,
         BGPPeeringServiceIntent,
         ServiceDeploymentIntent,

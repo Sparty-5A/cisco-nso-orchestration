@@ -8,9 +8,9 @@ using a template-based approach.
 from loguru import logger
 from pathlib import Path
 
-from nso_orchestration.automation.nso_client import NSOClient
-from nso_orchestration.automation.service_models import BGPPeeringServiceIntent
-from nso_orchestration.automation.template_renderer import render_template
+from automation.nso_client import NSOClient
+from automation.service_models import BGPPeeringServiceIntent
+from automation.template_renderer import render_template
 
 
 def check_bgp_configured(client: NSOClient, device_name: str, intent: BGPPeeringServiceIntent) -> bool:
@@ -117,7 +117,7 @@ def deploy_bgp_service(
     """
     # Load inventory only if not provided
     if inventory is None:
-        from nso_orchestration.automation.inventory_loader import load_inventory
+        from automation.inventory_loader import load_inventory
         inventory = load_inventory()
 
     # Get device from inventory

@@ -38,10 +38,10 @@ import yaml
 from decouple import config
 from loguru import logger
 
-from nso_orchestration.automation.device_engine import DeviceEngine
-from nso_orchestration.automation.device_models import NetworkIntent
-from nso_orchestration.automation.inventory_loader import load_inventory
-from nso_orchestration.automation.nso_client import NSOClient
+from automation.device_engine import DeviceEngine
+from automation.device_models import NetworkIntent
+from automation.inventory_loader import load_inventory
+from automation.nso_client import NSOClient
 
 
 def load_device_intent(intent_file: Path) -> NetworkIntent:
@@ -138,7 +138,7 @@ def merge_intents(intents: list[NetworkIntent]) -> NetworkIntent:
                 merged_delete_bgp_neighbors = device.delete_unmanaged_bgp_neighbors
 
                 # Create merged device
-                from nso_orchestration.automation.device_models import DeviceIntent
+                from automation.device_models import DeviceIntent
                 merged_device = DeviceIntent(
                     name=device.name,
                     device_type=device.device_type,

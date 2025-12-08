@@ -56,7 +56,7 @@ class Inventory:
 
         Args:
             inventory_dir: Path to inventory directory. If None, uses
-                          nso_orchestration/inventory/
+                          cisco_nso_orchestration/inventory/
         """
         if inventory_dir is None:
             # Default: inventory/ directory relative to this file

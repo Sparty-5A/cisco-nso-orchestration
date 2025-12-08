@@ -3,8 +3,8 @@
 import pytest
 from loguru import logger
 
-from nso_orchestration.automation.device_engine import DeviceEngine
-from nso_orchestration.automation.device_models import (
+from automation.device_engine import DeviceEngine
+from automation.device_models import (
     BGPIntent,
     BGPNeighborIntent,
     DeviceIntent,
@@ -139,7 +139,7 @@ class TestDeviceLevelBGP:
         finally:
             # CLEANUP
             logger.info(f"Removing BGP from {device}")
-            from nso_orchestration.services.bgp_peering import remove_bgp_service
+            from services.bgp_peering import remove_bgp_service
 
             success, message = remove_bgp_service(
                 nso_client, device, 65097, dry_run=False
@@ -217,14 +217,14 @@ class TestDeviceLevelBGP:
 
         finally:
             # Cleanup
-            from nso_orchestration.services.bgp_peering import remove_bgp_service
+            from services.bgp_peering import remove_bgp_service
 
             for device in [device1, device2]:
                 remove_bgp_service(nso_client, device, 65096, dry_run=False)
 
     def test_device_bgp_with_loopbacks(self, nso_client, sync_device, inventory):
         """Test deploying both loopbacks and BGP together (integrated)."""
-        from nso_orchestration.automation.device_models import LoopbackIntent
+        from automation.device_models import LoopbackIntent
 
         device = sync_device
 
@@ -270,7 +270,7 @@ class TestDeviceLevelBGP:
 
         finally:
             # Cleanup both
-            from nso_orchestration.services.bgp_peering import remove_bgp_service
+            from services.bgp_peering import remove_bgp_service
 
             remove_bgp_service(nso_client, device, 65095, dry_run=False)
             nso_client.delete_loopback(device, "150")
@@ -442,7 +442,7 @@ class TestBGPNeighborDeletion:
             logger.info("✓ Safe mode test passed - extra neighbor preserved")
 
         finally:
-            from nso_orchestration.services.bgp_peering import remove_bgp_service
+            from services.bgp_peering import remove_bgp_service
 
             remove_bgp_service(nso_client, device, 65094, dry_run=False)
 
@@ -548,7 +548,7 @@ class TestBGPNeighborDeletion:
             logger.info("✓ Strict mode test passed - extra neighbor removed")
 
         finally:
-            from nso_orchestration.services.bgp_peering import remove_bgp_service
+            from services.bgp_peering import remove_bgp_service
 
             remove_bgp_service(nso_client, device, 65093, dry_run=False)
 

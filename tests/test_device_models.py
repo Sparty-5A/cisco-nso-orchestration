@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from nso_orchestration.automation.device_models import (
+from automation.device_models import (
     DeviceIntent,
     LoopbackIntent,
     NetworkIntent,

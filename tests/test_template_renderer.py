@@ -3,7 +3,7 @@
 import pytest
 from jinja2 import TemplateNotFound, UndefinedError
 
-from nso_orchestration.automation.template_renderer import (
+from automation.template_renderer import (
     TemplateRenderer,
     render_template,
 )

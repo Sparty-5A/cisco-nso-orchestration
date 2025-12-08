@@ -10,17 +10,17 @@ from typing import Any
 
 from loguru import logger
 
-from nso_orchestration.automation.device_models import (
+from automation.device_models import (
     DeviceIntent,
     NetworkIntent,
 )
-from nso_orchestration.automation.nso_client import NSOClient
-from nso_orchestration.services.bgp_peering import (
+from automation.nso_client import NSOClient
+from services.bgp_peering import (
     check_bgp_configured,
     deploy_bgp_service,
     remove_bgp_service,
 )
-from nso_orchestration.automation.service_models import (
+from automation.service_models import (
     BGPPeeringServiceIntent,
     BGPNeighborIntent,
 )

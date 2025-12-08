@@ -19,7 +19,7 @@ class TemplateRenderer:
 
         Args:
             template_dir: Root directory for templates. If None, uses
-                         nso_orchestration/templates/
+                         cisco_nso_orchestration/templates/
         """
         if template_dir is None:
             # Default: templates/ directory relative to this file

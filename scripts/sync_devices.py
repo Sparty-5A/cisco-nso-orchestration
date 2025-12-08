@@ -8,7 +8,7 @@ NSO's CDB has the latest device configurations.
 from decouple import config
 from loguru import logger
 
-from nso_orchestration.automation.nso_client import NSOClient
+from automation.nso_client import NSOClient
 
 
 def main():

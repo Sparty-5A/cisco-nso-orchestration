@@ -14,10 +14,10 @@ import yaml
 from decouple import config
 from loguru import logger
 
-from nso_orchestration.automation.inventory_loader import load_inventory
-from nso_orchestration.automation.nso_client import NSOClient
-from nso_orchestration.automation.service_models import ServiceDeploymentIntent
-from nso_orchestration.automation.service_orchestrator import ServiceOrchestrator
+from automation.inventory_loader import load_inventory
+from automation.nso_client import NSOClient
+from automation.service_models import ServiceDeploymentIntent
+from automation.service_orchestrator import ServiceOrchestrator
 
 
 def load_service_intent(file_path: Path) -> ServiceDeploymentIntent:

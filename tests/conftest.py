@@ -10,10 +10,10 @@ import pytest
 from decouple import config
 from loguru import logger
 
-from nso_orchestration.automation.inventory_loader import load_inventory
-from nso_orchestration.automation.nso_client import NSOClient
-from nso_orchestration.automation.service_orchestrator import ServiceOrchestrator
-from nso_orchestration.automation.template_renderer import TemplateRenderer
+from automation.inventory_loader import load_inventory
+from automation.nso_client import NSOClient
+from automation.service_orchestrator import ServiceOrchestrator
+from automation.template_renderer import TemplateRenderer
 
 # Configure loguru for tests
 logger.remove()  # Remove default handler
@@ -283,7 +283,7 @@ def clean_bgp_service(nso_client, test_device):
             # Deploy BGP...
             # Automatic cleanup happens after test
     """
-    from nso_orchestration.services.bgp_peering import remove_bgp_service
+    from services.bgp_peering import remove_bgp_service
 
     deployed_as_numbers = []
 
